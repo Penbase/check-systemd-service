@@ -16,8 +16,9 @@ if os.getenv('LANG'):
     locale.setlocale(locale.LC_ALL, os.getenv('LANG'))
 
 class Service(object):
-    def __init__(self, service):
+    def __init__(self, service, check_is_enabled=True):
         self.name = service
+        self.check_is_enabled = check_is_enabled
         self._info = self._get_properties(service)
 
     @staticmethod
@@ -40,6 +41,8 @@ class Service(object):
         return self._info.get(name, None)
 
     def is_enabled(self):
+        if not self.check_is_enabled:
+            return True
         enabled_states = [
             'enabled',
             'enabled-runtime',
@@ -178,9 +181,10 @@ def main():
     parser.add_argument('--exit-time-critical', type=int, default=0)
     parser.add_argument('--running-time-warning', type=int, default=0)
     parser.add_argument('--running-time-critical', type=int, default=0)
+    parser.add_argument('--check-is-enabled', type=int, default=1)
     args = parser.parse_args()
 
-    service = Service(args.service)
+    service = Service(args.service, args.check_is_enabled != 0)
 
     if service.get_property('Type') == 'oneshot':
         retval, msg, perfdata = check_status_oneshot(service,
