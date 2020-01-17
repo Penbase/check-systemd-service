@@ -10,11 +10,6 @@ import sys
 import subprocess
 from datetime import datetime, timedelta
 
-import os
-import locale
-if os.getenv('LANG'):
-    locale.setlocale(locale.LC_ALL, os.getenv('LANG'))
-
 class Service(object):
     def __init__(self, service, check_is_enabled=True):
         self.name = service
@@ -24,7 +19,7 @@ class Service(object):
     @staticmethod
     def _get_properties(service):
         info = {}
-        output = subprocess.check_output(['systemctl', 'show', service])
+        output = subprocess.run(['systemctl', 'show', service], check=True, stdout=subprocess.PIPE, env={"LC_ALL": "en"}).stdout
 
         for line in output.decode('utf-8').split('\n'):
             if not line.strip():
